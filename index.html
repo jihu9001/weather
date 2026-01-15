@@ -116,6 +116,8 @@
                             <span>Search</span>
                         </button>
                     </div>
+                    <!-- Autocomplete Suggestions -->
+                    <div id="city-suggestions" class="city-suggestions hidden" role="listbox" aria-label="City suggestions"></div>
                 </div>
 
                 <!-- Quick Cities -->
@@ -148,7 +150,19 @@
                 </nav>
             </section>
 
-            <!-- Loading -->
+            <!-- Loading Skeleton -->
+            <div id="skeleton-loader" class="skeleton-loader hidden" role="status" aria-live="polite">
+                <div class="skeleton-grid">
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                </div>
+            </div>
+
+            <!-- Loading (legacy) -->
             <div id="loading" class="loading hidden" role="status" aria-live="polite">
                 <div class="loading-spinner">
                     <div class="spinner"></div>
