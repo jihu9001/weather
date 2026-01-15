@@ -1,13 +1,86 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather - Weather Query</title>
-    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Real-time weather and 7-day forecasts for 16 major cities in China including Beijing, Shanghai, Guangzhou, Shenzhen, Hangzhou, Chengdu, and more. Accurate temperature, humidity, wind, and weather conditions.">
+    <meta name="keywords" content="China weather, Beijing weather, Shanghai weather, Guangzhou weather, Shenzhen weather, Chinese cities weather, weather forecast China, Beijing forecast, Shanghai forecast, Hangzhou weather, Chengdu weather, Wuhan weather, Chongqing weather, Xi'an weather, Nanjing weather, Tianjin weather, Suzhou weather, Qingdao weather, Dalian weather, Xiamen weather">
+    <meta name="author" content="China Weather">
+    <meta name="robots" content="index, follow">
+    <meta name="language" content="English">
+    
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="China Weather - Real-time Forecasts for 16 Major Cities">
+    <meta property="og:description" content="Get accurate real-time weather and 7-day forecasts for Beijing, Shanghai, Guangzhou, Shenzhen, Hangzhou, Chengdu, and 10 more major Chinese cities.">
+    <meta property="og:url" content="https://jihu9001.github.io/weather/">
+    <meta property="og:site_name" content="China Weather">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:image" content="https://jihu9001.github.io/weather/assets/og-image.png">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="China Weather - Real-time Forecasts">
+    <meta name="twitter:description" content="Real-time weather for Beijing, Shanghai, Guangzhou, Shenzhen and 12 more Chinese cities">
+    <meta name="twitter:image" content="https://jihu9001.github.io/weather/assets/og-image.png">
+    
+    <!-- Canonical -->
+    <link rel="canonical" href="https://jihu9001.github.io/weather/">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    
+    <!-- Preconnect -->
+    <link rel="preconnect" href="https://api.weatherapi.com">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Title -->
+    <title>China Weather - Real-time Forecasts for Beijing, Shanghai, Guangzhou, Shenzhen & 13 More Cities</title>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "China Weather",
+      "url": "https://jihu9001.github.io/weather/",
+      "description": "Real-time weather and 7-day forecasts for 16 major cities in China",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://jihu9001.github.io/weather/?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      },
+      "inLanguage": "en"
+    }
+    </script>
+    
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "China Weather - Real-time Weather Query",
+      "description": "Get accurate real-time weather and 7-day forecasts for major cities in China",
+      "url": "https://jihu9001.github.io/weather/",
+      "inLanguage": "en",
+      "about": {
+        "@type": "Place",
+        "name": "China"
+      }
+    }
+    </script>
 </head>
 <body>
     <div class="app-wrapper">
@@ -23,62 +96,69 @@
             <!-- Header -->
             <header class="header">
                 <div class="logo">
-                    <span class="logo-icon">🌤️</span>
-                    <h1>Weather</h1>
+                    <span class="logo-icon" aria-hidden="true">🌤️</span>
+                    <h1>China Weather</h1>
                 </div>
-                <p class="subtitle">Real-time Weather Query</p>
+                <p class="subtitle">Real-time Weather & 7-Day Forecasts</p>
             </header>
 
             <!-- Search Section -->
-            <div class="search-section">
+            <section class="search-section" aria-label="City Search">
                 <div class="search-box">
                     <div class="search-input-wrapper">
-                        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                             <circle cx="11" cy="11" r="8"></circle>
                             <path d="m21 21-4.35-4.35"></path>
                         </svg>
-                        <input type="text" id="city-input" placeholder="Search city (e.g., Beijing, Shanghai)" autocomplete="off">
-                        <button id="search-btn" class="search-btn">
+                        <label for="city-input" class="visually-hidden">Search for a city</label>
+                        <input type="text" id="city-input" placeholder="Search city (e.g., Beijing, Shanghai)" autocomplete="off" aria-label="City name">
+                        <button id="search-btn" class="search-btn" aria-label="Search weather">
                             <span>Search</span>
                         </button>
                     </div>
                 </div>
 
                 <!-- Quick Cities -->
-                <div class="quick-cities">
+                <nav class="quick-cities" aria-label="Popular cities quick links">
                     <div class="quick-cities-header">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                             <circle cx="12" cy="10" r="3"></circle>
                         </svg>
                         <span>Popular Cities</span>
                     </div>
-                    <div class="quick-cities-list" id="quick-cities">
-                        <button class="city-tag" data-city="Beijing">Beijing</button>
-                        <button class="city-tag" data-city="Shanghai">Shanghai</button>
-                        <button class="city-tag" data-city="Guangzhou">Guangzhou</button>
-                        <button class="city-tag" data-city="Shenzhen">Shenzhen</button>
-                        <button class="city-tag" data-city="Hangzhou">Hangzhou</button>
-                        <button class="city-tag" data-city="Chengdu">Chengdu</button>
-                        <button class="city-tag" data-city="Wuhan">Wuhan</button>
-                        <button class="city-tag" data-city="Chongqing">Chongqing</button>
-                        <button class="city-tag" data-city="Xi'an">Xi'an</button>
-                        <button class="city-tag" data-city="Nanjing">Nanjing</button>
+                    <div class="quick-cities-list" id="quick-cities" role="list">
+                        <button class="city-tag" data-city="Beijing" role="listitem">Beijing</button>
+                        <button class="city-tag" data-city="Shanghai" role="listitem">Shanghai</button>
+                        <button class="city-tag" data-city="Guangzhou" role="listitem">Guangzhou</button>
+                        <button class="city-tag" data-city="Shenzhen" role="listitem">Shenzhen</button>
+                        <button class="city-tag" data-city="Hangzhou" role="listitem">Hangzhou</button>
+                        <button class="city-tag" data-city="Chengdu" role="listitem">Chengdu</button>
+                        <button class="city-tag" data-city="Wuhan" role="listitem">Wuhan</button>
+                        <button class="city-tag" data-city="Chongqing" role="listitem">Chongqing</button>
+                        <button class="city-tag" data-city="Xi'an" role="listitem">Xi'an</button>
+                        <button class="city-tag" data-city="Nanjing" role="listitem">Nanjing</button>
+                        <button class="city-tag" data-city="Tianjin" role="listitem">Tianjin</button>
+                        <button class="city-tag" data-city="Suzhou" role="listitem">Suzhou</button>
+                        <button class="city-tag" data-city="Qingdao" role="listitem">Qingdao</button>
+                        <button class="city-tag" data-city="Dalian" role="listitem">Dalian</button>
+                        <button class="city-tag" data-city="Xiamen" role="listitem">Xiamen</button>
+                        <button class="city-tag" data-city="Shenyang" role="listitem">Shenyang</button>
                     </div>
-                </div>
-            </div>
+                </nav>
+            </section>
 
             <!-- Loading -->
-            <div id="loading" class="loading hidden">
+            <div id="loading" class="loading hidden" role="status" aria-live="polite">
                 <div class="loading-spinner">
                     <div class="spinner"></div>
-                    <p>Loading...</p>
+                    <p>Loading weather data...</p>
                 </div>
             </div>
 
             <!-- Error -->
-            <div id="error" class="error-toast hidden">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <div id="error" class="error-toast hidden" role="alert" aria-live="assertive">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                     <circle cx="12" cy="12" r="10"></circle>
                     <line x1="12" y1="8" x2="12" y2="12"></line>
                     <line x1="12" y1="16" x2="12.01" y2="16"></line>
@@ -87,35 +167,35 @@
             </div>
 
             <!-- Weather Detail -->
-            <div id="weather-detail" class="weather-detail hidden">
+            <section id="weather-detail" class="weather-detail hidden" aria-label="Weather Details" aria-expanded="false">
                 <div class="detail-header">
                     <h2 id="detail-city"></h2>
-                    <button class="close-detail" id="close-detail">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <button class="close-detail" id="close-detail" aria-label="Close weather details">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                             <line x1="18" y1="6" x2="6" y2="18"></line>
                             <line x1="6" y1="6" x2="18" y2="18"></line>
                         </svg>
                     </button>
                 </div>
-                <div class="current-weather-card" id="current-weather-card"></div>
+                <div class="current-weather-card" id="current-weather-card" aria-label="Current Weather"></div>
                 <div class="forecast-section" id="forecast-section">
-                    <h3>Forecast</h3>
-                    <div class="forecast-list" id="forecast-list"></div>
+                    <h3>7-Day Forecast</h3>
+                    <div class="forecast-list" id="forecast-list" role="list" aria-label="Forecast list"></div>
                 </div>
-            </div>
+            </section>
 
             <!-- Popular Cities -->
-            <div class="main-cities-weather" id="main-cities-weather">
+            <section class="main-cities-weather" id="main-cities-weather" aria-label="Weather for Popular Cities">
                 <div class="section-header">
                     <h2>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                             <circle cx="12" cy="10" r="3"></circle>
                         </svg>
-                        Popular Cities
+                        Major Cities in China
                     </h2>
-                    <button class="refresh-btn" id="refresh-main">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                    <button class="refresh-btn" id="refresh-main" aria-label="Refresh weather data">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" aria-hidden="true">
                             <path d="M23 4v6h-6"></path>
                             <path d="M1 20v-6h6"></path>
                             <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
@@ -123,13 +203,21 @@
                         Refresh
                     </button>
                 </div>
-                <div class="cities-grid" id="cities-grid"></div>
-            </div>
+                <div class="cities-grid" id="cities-grid" role="list" aria-label="City weather cards"></div>
+            </section>
+            
+            <!-- About Section -->
+            <section class="about-section" aria-label="About">
+                <h2>About China Weather</h2>
+                <p>Get accurate real-time weather updates and 7-day forecasts for 16 major cities in China. Perfect for travelers, business visitors, and anyone planning to explore China's diverse regions.</p>
+                <p>Data provided by <a href="https://www.weatherapi.com/" target="_blank" rel="noopener noreferrer">WeatherAPI</a>.</p>
+            </section>
         </div>
 
         <!-- Footer -->
-        <footer class="footer">
-            <p>Data: WeatherAPI · weatherapi.com</p>
+        <footer class="footer" role="contentinfo">
+            <p>Data: <a href="https://www.weatherapi.com/" target="_blank" rel="noopener noreferrer">WeatherAPI</a> · weatherapi.com</p>
+            <p class="copyright">© 2026 China Weather. All rights reserved.</p>
         </footer>
     </div>
 

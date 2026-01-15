@@ -14,35 +14,30 @@ const CONFIG = {
         prefix: 'weather_'
     },
 
-    // Popular Cities for homepage
+    // 16 Major Cities in China
     popularCities: [
-        'Beijing', 'Shanghai', 'Guangzhou', 'Shenzhen', 'Hangzhou', 'Chengdu'
+        'Beijing', 'Shanghai', 'Guangzhou', 'Shenzhen', 
+        'Hangzhou', 'Chengdu', 'Wuhan', 'Chongqing',
+        'Xi\'an', 'Nanjing', 'Tianjin', 'Suzhou',
+        'Qingdao', 'Dalian', 'Xiamen', 'Shenyang'
     ],
 
-    // Quick Cities List
+    // Quick Cities List (same as popular)
     quickCities: [
         'Beijing', 'Shanghai', 'Guangzhou', 'Shenzhen', 
-        'Hangzhou', 'Chengdu', 'Wuhan', 'Chongqing', 'Xi\'an', 'Nanjing'
+        'Hangzhou', 'Chengdu', 'Wuhan', 'Chongqing',
+        'Xi\'an', 'Nanjing', 'Tianjin', 'Suzhou',
+        'Qingdao', 'Dalian', 'Xiamen', 'Shenyang'
     ],
 
     // Weather Icons Mapping
     icons: {
-        // English
         'Sunny': '☀️', 'Clear': '☀️',
         'Partly cloudy': '⛅', 'Cloudy': '☁️', 'Overcast': '☁️',
         'Rain': '🌧️', 'Light rain': '🌧️', 'Moderate rain': '🌧️', 'Heavy rain': '🌧️',
         'Snow': '❄️', 'Light snow': '❄️', 'Moderate snow': '❄️', 'Heavy snow': '⛄',
         'Thunder': '⛈️', 'Thunderstorm': '⛈️',
-        'Fog': '🌫️', 'Mist': '🌫️', 'Haze': '🌫️',
-        // Chinese (lang=zh response)
-        '晴天': '☀️', '晴': '☀️', '晴朗': '☀️',
-        '少云': '⛅', '局部多云': '⛅',
-        '阴': '☁️', '阴天': '☁️',
-        '小雨': '🌧️', '中雨': '🌧️', '大雨': '🌧️', '暴雨': '⛈️',
-        '小雪': '❄️', '中雪': '❄️', '大雪': '❄️', '暴雪': '⛄',
-        '雷阵雨': '⛈️',
-        '雾': '🌫️', '薄雾': '🌫️',
-        '霾': '🌫️', '沙尘暴': '🌪️'
+        'Fog': '🌫️', 'Mist': '🌫️', 'Haze': '🌫️'
     },
 
     // Weekday mapping

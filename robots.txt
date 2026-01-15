@@ -1,0 +1,13 @@
+# China Weather - robots.txt
+# https://jihu9001.github.io/weather/
+
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://jihu9001.github.io/weather/sitemap.xml
+
+# Disallow sensitive paths
+Disallow: /js/
+Disallow: /css/
+Disallow: /assets/
