@@ -26,6 +26,10 @@
     // 初始化
     function init() {
         console.log('🌤️ 天气应用启动');
+        
+        // 清除旧缓存（兼容旧数据格式）
+        clearCache();
+        
         loadPopularCities();
         bindEvents();
         console.log('✓ 初始化完成');
@@ -257,6 +261,14 @@
         if (!dateStr) return '';
         const parts = dateStr.split('-');
         return parts.length === 3 ? `${parts[1]}-${parts[2]}` : dateStr;
+    }
+
+    // 清除缓存（用于调试）
+    function clearCache() {
+        Object.keys(localStorage)
+            .filter(key => key.startsWith(CONFIG.cache.prefix))
+            .forEach(key => localStorage.removeItem(key));
+        console.log('✓ 缓存已清除');
     }
 
     // 显示加载
