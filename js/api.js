@@ -1,26 +1,18 @@
-// WeatherAPI调用模块
-const API = {
-    // 缓存配置
-    cacheConfig: {
-        enabled: true,
-        duration: 5 * 60 * 1000, // 5分钟
-        prefix: 'weather_cache_'
-    },
-
+/**
+ * WeatherAPI 服务模块
+ * Docs: https://www.weatherapi.com/docs/
+ */
+const WeatherAPI = {
     // 获取缓存
-    getCache: function(key) {
+    getCache(key) {
         try {
-            var data = localStorage.getItem(key);
+            const data = localStorage.getItem(key);
             if (!data) return null;
-
-            var cached = JSON.parse(data);
-            var now = Date.now();
-
-            if (cached.expire && now > cached.expire) {
+            const cached = JSON.parse(data);
+            if (Date.now() > cached.expire) {
                 localStorage.removeItem(key);
                 return null;
             }
-
             return cached.data;
         } catch (e) {
             return null;
@@ -28,11 +20,11 @@ const API = {
     },
 
     // 设置缓存
-    setCache: function(key, data) {
+    setCache(key, data) {
         try {
-            var cacheData = {
+            const cacheData = {
                 data: data,
-                expire: Date.now() + this.cacheConfig.duration
+                expire: Date.now() + CONFIG.cache.duration
             };
             localStorage.setItem(key, JSON.stringify(cacheData));
         } catch (e) {
@@ -40,155 +32,150 @@ const API = {
         }
     },
 
-    // 生成缓存key
-    getCacheKey: function(type, city) {
-        return this.cacheConfig.prefix + type + '_' + city;
+    // 构建请求URL
+    buildUrl(endpoint, params) {
+        const url = new URL(`${CONFIG.baseUrl}${endpoint}`);
+        url.searchParams.set('key', CONFIG.apiKey);
+        Object.entries(params).forEach(([key, value]) => {
+            if (value !== undefined && value !== null) {
+                url.searchParams.set(key, value);
+            }
+        });
+        return url.toString();
     },
 
-    // 带超时的fetch
-    fetchWithTimeout: async function(url, timeout) {
-        const controller = new AbortController();
-        const id = setTimeout(() => controller.abort(), timeout);
-
-        try {
-            const response = await fetch(url, {
-                signal: controller.signal
-            });
-            clearTimeout(id);
-            return response;
-        } catch (error) {
-            clearTimeout(id);
-            throw error;
+    // 发送请求
+    async request(endpoint, params = {}, useCache = true) {
+        const cacheKey = `${CONFIG.cache.prefix}${endpoint}_${JSON.stringify(params)}`;
+        
+        if (useCache && CONFIG.cache.enabled) {
+            const cached = this.getCache(cacheKey);
+            if (cached) {
+                console.log('📦 Cache hit:', endpoint);
+                return { ...cached, fromCache: true };
+            }
         }
+
+        const url = this.buildUrl(endpoint, params);
+        
+        try {
+            const response = await fetch(url, { signal: AbortSignal.timeout(8000) });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.error) {
+                throw new Error(data.error.message);
+            }
+
+            // 缓存结果
+            if (useCache && CONFIG.cache.enabled) {
+                this.setCache(cacheKey, data);
+            }
+
+            return { success: true, data };
+        } catch (error) {
+            console.error('API请求失败:', error.message);
+            return { success: false, error: error.message };
+        }
+    },
+
+    // 搜索城市
+    async search(q) {
+        return this.request('/search.json', { q });
     },
 
     // 获取实时天气
-    async getLiveWeather(city) {
-        // 检查缓存
-        if (this.cacheConfig.enabled) {
-            var cacheKey = this.getCacheKey('live', city);
-            var cached = this.getCache(cacheKey);
-            if (cached) {
-                console.log('📦 使用缓存:', city);
-                return { success: true, data: cached, fromCache: true };
-            }
-        }
-
-        const url = `${CONFIG.apiBaseUrl}/current.json?key=${CONFIG.apiKey}&q=${encodeURIComponent(city)}&lang=zh`;
-
-        try {
-            const response = await this.fetchWithTimeout(url, 8000);
-
-            if (!response.ok) {
-                return { success: false, error: 'API请求失败' };
-            }
-
-            const data = await response.json();
-
-            if (data.error) {
-                return { success: false, error: data.error.message };
-            }
-
-            // 格式化数据以匹配现有UI
-            var formattedData = this.formatCurrentWeather(data);
-
-            // 写入缓存
-            if (this.cacheConfig.enabled) {
-                var cacheKey = this.getCacheKey('live', city);
-                this.setCache(cacheKey, formattedData);
-            }
-
-            return { success: true, data: formattedData };
-        } catch (error) {
-            console.error('获取天气失败:', error);
-            return { success: false, error: '网络请求失败' };
-        }
+    async current(q) {
+        return this.request('/current.json', { q, lang: 'zh' });
     },
 
-    // 获取天气预报（未来7天）
-    async getForecast(city, days) {
-        if (!days) days = 7;
+    // 获取天气预报
+    async forecast(q, days = 7) {
+        return this.request('/forecast.json', { q, days, lang: 'zh' });
+    }
+};
 
-        // 检查缓存
-        if (this.cacheConfig.enabled) {
-            var cacheKey = this.getCacheKey('forecast', city);
-            var cached = this.getCache(cacheKey);
-            if (cached) {
-                console.log('📦 使用缓存:', city);
-                return { success: true, data: cached, fromCache: true };
-            }
-        }
-
-        const url = `${CONFIG.apiBaseUrl}/forecast.json?key=${CONFIG.apiKey}&q=${encodeURIComponent(city)}&days=${days}&lang=zh`;
-
-        try {
-            const response = await this.fetchWithTimeout(url, 8000);
-
-            if (!response.ok) {
-                return { success: false, error: 'API请求失败' };
-            }
-
-            const data = await response.json();
-
-            if (data.error) {
-                return { success: false, error: data.error.message };
-            }
-
-            // 格式化预报数据
-            var formattedForecast = this.formatForecast(data);
-
-            // 写入缓存
-            if (this.cacheConfig.enabled) {
-                var cacheKey = this.getCacheKey('forecast', city);
-                this.setCache(cacheKey, formattedForecast);
-            }
-
-            return { success: true, data: formattedForecast };
-        } catch (error) {
-            console.error('获取预报失败:', error);
-            return { success: false, error: '网络请求失败' };
-        }
-    },
-
-    // 格式化实时天气数据（匹配原有UI结构）
-    formatCurrentWeather: function(data) {
-        var location = data.location || {};
-        var current = data.current || {};
+/**
+ * 天气数据格式化工具
+ */
+const WeatherFormatter = {
+    // 格式化实时天气
+    formatCurrent(data) {
+        const location = data.location || {};
+        const current = data.current || {};
+        const condition = current.condition || {};
 
         return {
-            province: location.country === 'China' ? '中国' : (location.country || ''),
-            city: location.name || location.city || '未知',
-            weather: current.condition ? current.condition.text : '未知',
-            temperature: current.temp_c || '0',
-            winddirection: current.wind_dir || '无',
-            windpower: current.wind_kph ? (current.wind_kph + ' km/h') : '0',
-            humidity: current.humidity || '0',
-            reporttime: new Date().toISOString().slice(0, 19).replace('T', ' '),
-            temperature_float: current.temp_c || '0',
-            humidity_float: current.humidity || '0'
+            city: location.name || '未知',
+            country: location.country || '',
+            region: location.region || '',
+            temp: Math.round(current.temp_c) || 0,
+            feelsLike: Math.round(current.feelslike_c) || 0,
+            condition: condition.text || '未知',
+            icon: condition.icon || '',
+            code: condition.code || 0,
+            wind: current.wind_kph || 0,
+            windDir: current.wind_dir || '',
+            windDegree: current.wind_degree || 0,
+            pressure: current.pressure_mb || 0,
+            humidity: current.humidity || 0,
+            cloud: current.cloud || 0,
+            visibility: current.vis_km || 0,
+            uv: current.uv || 0,
+            gust: current.gust_kph || 0,
+            isDay: current.is_day === 1,
+            lastUpdated: current.last_updated || '',
+            localTime: location.localtime || ''
         };
     },
 
     // 格式化预报数据
-    formatForecast: function(data) {
+    formatForecast(data) {
         if (!data.forecast || !data.forecast.forecastday) {
             return [];
         }
 
-        return data.forecast.forecastday.map(function(day) {
-            var date = day.date;
-            var dayData = day.day || {};
+        return data.forecast.forecastday.map(item => {
+            const day = item.day || {};
+            const condition = day.condition || {};
+            const date = new Date(item.date);
 
             return {
-                date: date,
-                week: ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][new Date(date).getDay()],
-                dayweather: dayData.condition ? dayData.condition.text : '未知',
-                nightweather: dayData.condition ? dayData.condition.text : '未知',
-                daytemp: dayData.maxtemp_c || '0',
-                nighttemp: dayData.mintemp_c || '0',
-                daywind: dayData.maxwind_kph ? dayData.maxwind_kph + 'km/h' : '微风',
-                nightwind: '微风'
+                date: item.date,
+                weekday: CONFIG.weekdays[date.getDay()] || '',
+                tempMax: Math.round(day.maxtemp_c) || 0,
+                tempMin: Math.round(day.mintemp_c) || 0,
+                tempAvg: Math.round(day.avgtemp_c) || 0,
+                condition: condition.text || '未知',
+                icon: condition.icon || '',
+                code: condition.code || 0,
+                windMax: day.maxwind_kph || 0,
+                precip: day.totalprecip_mm || 0,
+                humidity: day.avghumidity || 0,
+                uv: day.uv || 0,
+                chanceOfRain: day.daily_chance_of_rain || 0,
+                chanceOfSnow: day.daily_chance_of_snow || 0,
+                sunrise: item.astro?.sunrise || '',
+                sunset: item.astro?.sunset || ''
             };
         });
+    },
+
+    // 获取天气图标
+    getIcon(condition) {
+        if (!condition) return '🌤️';
+        return CONFIG.icons[condition] || '🌤️';
+    },
+
+    // 获取风向描述
+    getWindDirection(degree) {
+        if (!degree && degree !== 0) return '';
+        const directions = ['北', '东北', '东', '东南', '南', '西南', '西', '西北'];
+        const index = Math.round(degree / 45) % 8;
+        return directions[index] || '';
     }
 };
