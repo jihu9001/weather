@@ -1,9 +1,9 @@
 /**
- * Weather Query Application
- * API: https://www.weatherapi.com/docs/
+ * Weather Query Application - Debug Version
  */
 (function() {
-    // DOM Elements
+    console.log('=== Weather App Starting ===');
+
     const $ = id => document.getElementById(id);
     const elements = {
         cityInput: $('city-input'),
@@ -18,55 +18,64 @@
         errorMsg: $('error-message')
     };
 
+    // Check elements exist
+    console.log('Elements check:');
+    Object.entries(elements).forEach(([key, el]) => {
+        console.log(`  ${key}: ${el ? 'OK' : 'MISSING'}`);
+    });
+
     // Initialize
     function init() {
-        console.log('Weather App Started');
-        clearCache();
+        console.log('=== Init ===');
         loadPopularCities();
         bindEvents();
-        console.log('Initialization Complete');
     }
 
-    // Clear old cache
-    function clearCache() {
-        Object.keys(localStorage)
-            .filter(key => key.startsWith(CONFIG.cache.prefix))
-            .forEach(key => localStorage.removeItem(key));
-        console.log('Cache cleared');
-    }
-
-    // Load popular cities weather
+    // Load popular cities
     async function loadPopularCities() {
-        console.log('Loading popular cities...');
+        console.log('=== Loading Cities ===');
         elements.citiesGrid.innerHTML = '';
+        elements.loading.classList.remove('hidden');
 
         const cities = CONFIG.popularCities;
-        let loaded = 0;
-        let failed = 0;
+        console.log('Cities to load:', cities);
 
         for (let i = 0; i < cities.length; i++) {
             const city = cities[i];
-            console.log(`[${i + 1}/${cities.length}] Loading ${city}`);
+            console.log(`\n[${i+1}/${cities.length}] Loading ${city}...`);
 
             try {
                 const result = await WeatherAPI.current(city);
+                console.log('Result:', result.success ? 'SUCCESS' : 'FAILED', result.error || '');
+
                 if (result.success) {
                     const weather = WeatherFormatter.formatCurrent(result.data);
+                    console.log('Weather data:', weather.city, weather.temp + 'C', weather.condition);
+                    
                     const card = createCityCard(weather, city);
                     elements.citiesGrid.appendChild(card);
-                    console.log(`OK: ${city} - ${weather.temp}C, ${weather.condition}`);
-                    loaded++;
                 } else {
-                    console.warn(`Failed: ${city} - ${result.error}`);
-                    failed++;
+                    // Show error card
+                    const errorCard = document.createElement('div');
+                    errorCard.className = 'city-card';
+                    errorCard.style.background = '#fee';
+                    errorCard.innerHTML = `
+                        <div class="city-card-header">
+                            <span class="city-name">${city}</span>
+                        </div>
+                        <div style="padding: 20px; text-align: center; color: #c00;">
+                            ❌ ${result.error || 'Load failed'}
+                        </div>
+                    `;
+                    elements.citiesGrid.appendChild(errorCard);
                 }
             } catch (e) {
-                console.error(`Error: ${city} - ${e.message}`);
-                failed++;
+                console.error('Exception:', e.message);
             }
         }
 
-        console.log(`Loaded: ${loaded}/${cities.length}, Failed: ${failed}`);
+        elements.loading.classList.add('hidden');
+        console.log('\n=== Loading Complete ===');
     }
 
     // Create city card
@@ -78,13 +87,13 @@
         card.innerHTML = `
             <div class="city-card-header">
                 <span class="city-name">${weather.city}</span>
-                <span class="city-update">${formatTime(weather.localTime)}</span>
+                <span class="city-update">${weather.localTime?.split(' ')[1] || ''}</span>
             </div>
             <div class="city-weather">
                 <span class="weather-icon-large">${WeatherFormatter.getIcon(weather.condition)}</span>
                 <div class="weather-temp-info">
                     <span class="temp-value">${weather.temp}</span>
-                    <span class="temp-unit">C</span>
+                    <span class="temp-unit">°C</span>
                 </div>
                 <span class="weather-desc">${weather.condition}</span>
             </div>
@@ -104,18 +113,25 @@
             </div>
         `;
 
-        card.onclick = () => showWeatherDetail(cityName);
+        card.onclick = function() {
+            showWeatherDetail(cityName);
+        };
+
         return card;
     }
 
     // Show weather detail
     async function showWeatherDetail(cityName) {
-        console.log(`Viewing: ${cityName}`);
+        console.log('\n=== Show Detail:', cityName, '===');
+        elements.weatherDetail.classList.remove('hidden');
 
         const [currentResult, forecastResult] = await Promise.all([
             WeatherAPI.current(cityName),
             WeatherAPI.forecast(cityName, 7)
         ]);
+
+        console.log('Current:', currentResult.success ? 'OK' : 'FAILED');
+        console.log('Forecast:', forecastResult.success ? 'OK' : 'FAILED');
 
         if (currentResult.success) {
             renderWeatherDetail(WeatherFormatter.formatCurrent(currentResult.data));
@@ -126,17 +142,14 @@
             renderForecast(forecast.slice(1, 5));
         }
 
-        elements.weatherDetail.classList.remove('hidden');
-        
         const mainSection = $('main-cities-weather');
         mainSection.parentNode.insertBefore(elements.weatherDetail, mainSection);
-        
         elements.weatherDetail.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    // Render weather detail
+    // Render detail
     function renderWeatherDetail(weather) {
-        $('detail-city').textContent = `${weather.country} - ${weather.city}`;
+        $('detail-city').textContent = weather.country + ' - ' + weather.city;
 
         const card = $('current-weather-card');
         card.innerHTML = `
@@ -155,12 +168,8 @@
             </div>
             <div class="detail-weather-grid">
                 <div class="detail-weather-item">
-                    <span class="label">Feels Like</span>
-                    <span class="value">${weather.feelsLike}C</span>
-                </div>
-                <div class="detail-weather-item">
                     <span class="label">Wind</span>
-                    <span class="value">${weather.windDir} ${weather.windDegree}°</span>
+                    <span class="value">${weather.windDir}</span>
                 </div>
                 <div class="detail-weather-item">
                     <span class="label">Speed</span>
@@ -169,14 +178,6 @@
                 <div class="detail-weather-item">
                     <span class="label">Humidity</span>
                     <span class="value">${weather.humidity}%</span>
-                </div>
-                <div class="detail-weather-item">
-                    <span class="label">Visibility</span>
-                    <span class="value">${weather.visibility} km</span>
-                </div>
-                <div class="detail-weather-item">
-                    <span class="label">Pressure</span>
-                    <span class="value">${weather.pressure} mb</span>
                 </div>
             </div>
         `;
@@ -191,7 +192,7 @@
             const item = document.createElement('div');
             item.className = 'forecast-item';
             item.innerHTML = `
-                <span class="forecast-date">${day.weekday} ${formatDate(day.date)}</span>
+                <span class="forecast-date">${day.weekday} ${day.date.split('-').slice(1).join('-')}</span>
                 <span class="forecast-icon">${WeatherFormatter.getIcon(day.condition)}</span>
                 <span class="forecast-weather">${day.condition}</span>
                 <span class="forecast-temp">${day.tempMin}° / ${day.tempMax}°</span>
@@ -200,84 +201,39 @@
         });
     }
 
-    // Search city
-    async function searchCity() {
-        const city = elements.cityInput.value.trim();
-        if (!city) return showError('Please enter a city name');
-
-        console.log(`Searching: ${city}`);
-        showLoading();
-
-        try {
-            await showWeatherDetail(city);
-            hideLoading();
-        } catch (e) {
-            showError(`Search failed: ${e.message}`);
-        }
-    }
-
     // Bind events
     function bindEvents() {
-        elements.searchBtn.onclick = searchCity;
-
-        elements.cityInput.onkeypress = e => {
-            if (e.key === 'Enter') searchCity();
+        elements.searchBtn.onclick = function() {
+            const city = elements.cityInput.value.trim();
+            if (city) {
+                console.log('\n=== Search:', city, '===');
+                showWeatherDetail(city);
+            }
         };
 
-        elements.quickCities.onclick = e => {
+        elements.cityInput.onkeypress = function(e) {
+            if (e.key === 'Enter') {
+                const city = elements.cityInput.value.trim();
+                if (city) showWeatherDetail(city);
+            }
+        };
+
+        elements.quickCities.onclick = function(e) {
             if (e.target.classList.contains('city-tag')) {
                 const city = e.target.dataset.city;
+                console.log('\n=== Quick Click:', city, '===');
                 elements.cityInput.value = city;
                 showWeatherDetail(city);
             }
         };
 
-        elements.refreshBtn.onclick = () => {
-            elements.refreshBtn.disabled = true;
-            elements.refreshBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="animation: spin 1s linear infinite;"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg> Loading...';
-            loadPopularCities().then(() => {
-                elements.refreshBtn.disabled = false;
-                elements.refreshBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg> Refresh';
-            });
+        elements.refreshBtn.onclick = function() {
+            loadPopularCities();
         };
 
-        elements.closeDetail.onclick = () => {
+        elements.closeDetail.onclick = function() {
             elements.weatherDetail.classList.add('hidden');
         };
-    }
-
-    // Format time
-    function formatTime(timeStr) {
-        if (!timeStr) return '';
-        const parts = timeStr.split(' ');
-        return parts.length === 2 ? parts[1].substring(0, 5) : timeStr;
-    }
-
-    // Format date
-    function formatDate(dateStr) {
-        if (!dateStr) return '';
-        const parts = dateStr.split('-');
-        return parts.length === 3 ? `${parts[1]}-${parts[2]}` : dateStr;
-    }
-
-    // Show loading
-    function showLoading() {
-        elements.loading.classList.remove('hidden');
-        elements.error.classList.add('hidden');
-        elements.weatherDetail.classList.add('hidden');
-    }
-
-    // Hide loading
-    function hideLoading() {
-        elements.loading.classList.add('hidden');
-    }
-
-    // Show error
-    function showError(msg) {
-        elements.loading.classList.add('hidden');
-        elements.errorMsg.textContent = msg;
-        elements.error.classList.remove('hidden');
-        setTimeout(() => elements.error.classList.add('hidden'), 3000);
     }
 
     // Start
@@ -286,4 +242,6 @@
     } else {
         init();
     }
+
+    console.log('=== Weather App Started ===');
 })();
