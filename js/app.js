@@ -93,10 +93,11 @@
         card.className = 'city-card';
         card.dataset.city = cityName;
         card.dataset.status = 'loaded';
+        const displayName = CONFIG.cityDisplayNames[cityName] || cityName;
         
         card.innerHTML = `
             <div class="city-card-header">
-                <span class="city-name">${weather.city}</span>
+                <span class="city-name">${displayName}</span>
                 <span class="city-update">${weather.localTime?.split(' ')[1] || ''}</span>
             </div>
             <div class="city-weather">
@@ -136,11 +137,12 @@
         card.className = 'city-card';
         card.dataset.city = cityName;
         card.dataset.status = 'failed';
+        const displayName = CONFIG.cityDisplayNames[cityName] || cityName;
         
         card.innerHTML = `
             <div class="city-card-retry">
                 <span class="city-card-retry-icon">⚠️</span>
-                <span class="city-card-retry-text">${cityName}</span>
+                <span class="city-card-retry-text">${displayName}</span>
                 <span class="city-card-retry-text">${errorMsg || 'Load failed'}</span>
                 <button class="city-card-retry-btn" data-city="${cityName}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -256,9 +258,10 @@
             const item = document.createElement('div');
             item.className = 'city-suggestion-item' + (index === 0 ? ' highlighted' : '');
             item.dataset.city = city;
+            const displayName = CONFIG.cityDisplayNames[city] || city;
             item.innerHTML = `
                 <span class="city-suggestion-icon">🌤️</span>
-                <span class="city-suggestion-name">${city}</span>
+                <span class="city-suggestion-name">${displayName}</span>
             `;
             item.onclick = function() {
                 selectCity(city);
@@ -276,7 +279,8 @@
 
     // City autocomplete - Select city
     function selectCity(city) {
-        elements.cityInput.value = city;
+        const displayName = CONFIG.cityDisplayNames[city] || city;
+        elements.cityInput.value = displayName;
         hideCitySuggestions();
         showWeatherDetail(city);
     }
