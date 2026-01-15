@@ -14,21 +14,33 @@ const CONFIG = {
         prefix: 'weather_'
     },
 
-    // 16 Major Cities in China
+    // 16 Major Cities in China (API names)
     popularCities: [
         'Beijing', 'Shanghai', 'Guangzhou', 'Shenzhen', 
         'Hangzhou', 'Chengdu', 'Wuhan', 'Chongqing',
-        'Xi\'an', 'Nanjing', 'Tianjin', 'Suzhou',
+        'Xian', 'Nanjing', 'Tianjin', 'Suzhou',
         'Qingdao', 'Dalian', 'Xiamen', 'Shenyang'
     ],
 
-    // Quick Cities List (same as popular)
-    quickCities: [
-        'Beijing', 'Shanghai', 'Guangzhou', 'Shenzhen', 
-        'Hangzhou', 'Chengdu', 'Wuhan', 'Chongqing',
-        'Xi\'an', 'Nanjing', 'Tianjin', 'Suzhou',
-        'Qingdao', 'Dalian', 'Xiamen', 'Shenyang'
-    ],
+    // City display names (shown in UI)
+    cityDisplayNames: {
+        'Beijing': 'Beijing',
+        'Shanghai': 'Shanghai',
+        'Guangzhou': 'Guangzhou',
+        'Shenzhen': 'Shenzhen',
+        'Hangzhou': 'Hangzhou',
+        'Chengdu': 'Chengdu',
+        'Wuhan': 'Wuhan',
+        'Chongqing': 'Chongqing',
+        'Xian': "Xi'an",
+        'Nanjing': 'Nanjing',
+        'Tianjin': 'Tianjin',
+        'Suzhou': 'Suzhou',
+        'Qingdao': 'Qingdao',
+        'Dalian': 'Dalian',
+        'Xiamen': 'Xiamen',
+        'Shenyang': 'Shenyang'
+    },
 
     // Weather Icons Mapping
     icons: {
