@@ -1,58 +1,50 @@
-// 高德地图API配置
-// 请填写你的高德地图Web服务API Key
-// 申请地址: https://lbs.amap.com/
+// WeatherAPI配置
 const CONFIG = {
-    // 高德地图API Key
-    apiKey: '441344429ffff4c52989a83ec5ff2c68',
+    // WeatherAPI Key
+    apiKey: '891aafbb098b43fbaf850924261501',
 
-    // API基础URL
-    apiBaseUrl: 'https://restapi.amap.com/v3',
+    // WeatherAPI基础URL
+    apiBaseUrl: 'http://api.weatherapi.com/v1',
 
-    // 请求超时时间（毫秒）
-    timeout: 10000,
+    // 缓存配置（5分钟）
+    cacheConfig: {
+        enabled: true,
+        duration: 5 * 60 * 1000,
+        prefix: 'weather_cache_'
+    },
 
-    // 主要展示城市列表（首页默认显示，带adcode无需转换）
+    // 主要展示城市列表（使用城市名）
     mainCities: [
-        { name: '北京', adcode: '110100' },
-        { name: '上海', adcode: '310100' },
-        { name: '广州', adcode: '440100' },
-        { name: '深圳', adcode: '440300' },
-        { name: '杭州', adcode: '330100' },
-        { name: '成都', adcode: '510100' }
+        { name: 'Beijing', adcode: '110100' },
+        { name: 'Shanghai', adcode: '310100' },
+        { name: 'Guangzhou', adcode: '440100' },
+        { name: 'Shenzhen', adcode: '440300' },
+        { name: 'Hangzhou', adcode: '330100' },
+        { name: 'Chengdu', adcode: '510100' }
     ],
 
-    // 常用城市列表（搜索用）
+    // 常用城市列表
     quickCities: [
-        { name: '北京', adcode: '110100' },
-        { name: '上海', adcode: '310100' },
-        { name: '广州', adcode: '440100' },
-        { name: '深圳', adcode: '440300' },
-        { name: '杭州', adcode: '330100' },
-        { name: '成都', adcode: '510100' },
-        { name: '武汉', adcode: '420100' },
-        { name: '重庆', adcode: '500100' },
-        { name: '西安', adcode: '610100' },
-        { name: '南京', adcode: '320100' }
+        { name: 'Beijing' },
+        { name: 'Shanghai' },
+        { name: 'Guangzhou' },
+        { name: 'Shenzhen' },
+        { name: 'Hangzhou' },
+        { name: 'Chengdu' },
+        { name: 'Wuhan' },
+        { name: 'Chongqing' },
+        { name: "Xi'an" },
+        { name: 'Nanjing' }
     ],
 
     // 天气图标映射
     weatherIcons: {
-        '晴': '☀️',
-        '多云': '⛅',
-        '阴': '☁️',
-        '小雨': '🌧️',
-        '中雨': '🌧️',
-        '大雨': '🌧️',
-        '暴雨': '⛈️',
-        '小雪': '❄️',
-        '中雪': '❄️',
-        '大雪': '❄️',
-        '暴雪': '⛄',
-        '雷阵雨': '⛈️',
-        '雨夹雪': '🌨️',
-        '阵雨': '🌧️',
-        '雾': '🌫️',
-        '霾': '🌫️',
-        '沙尘暴': '🌪️'
+        'Sunny': '☀️', 'Clear': '☀️',
+        'Partly cloudy': '⛅', 'Cloudy': '☁️', 'Overcast': '☁️',
+        'Rain': '🌧️', 'Light rain': '🌧️', 'Moderate rain': '🌧️', 'Heavy rain': '🌧️',
+        'Snow': '❄️', 'Light snow': '❄️', 'Moderate snow': '❄️', 'Heavy snow': '⛄',
+        'Thunder': '⛈️', 'Thunderstorm': '⛈️',
+        'Fog': '🌫️', 'Mist': '🌫️',
+        'Haze': '🌫️'
     }
 };
