@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>天气查询 - 知天气</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-wrapper">
+        <!-- 背景装饰 -->
+        <div class="bg-gradient"></div>
+        <div class="bg-shapes">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            <div class="shape shape-3"></div>
+        </div>
+
+        <div class="container">
+            <!-- 头部 -->
+            <header class="header">
+                <div class="logo">
+                    <span class="logo-icon">🌤️</span>
+                    <h1>知天气</h1>
+                </div>
+                <p class="subtitle">实时天气查询 · 精准预报</p>
+            </header>
+
+            <!-- 搜索区域 -->
+            <div class="search-section">
+                <div class="search-box">
+                    <div class="search-input-wrapper">
+                        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.35-4.35"></path>
+                        </svg>
+                        <input type="text" id="city-input" placeholder="搜索城市（如：北京、上海、广州）" autocomplete="off">
+                        <button id="search-btn" class="search-btn">
+                            <span>查询</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 常用城市快捷入口 -->
+                <div class="quick-cities">
+                    <div class="quick-cities-header">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                            <circle cx="12" cy="10" r="3"></circle>
+                        </svg>
+                        <span>常用城市</span>
+                    </div>
+                    <div class="quick-cities-list" id="quick-cities">
+                        <button class="city-tag" data-city="北京">北京</button>
+                        <button class="city-tag" data-city="上海">上海</button>
+                        <button class="city-tag" data-city="广州">广州</button>
+                        <button class="city-tag" data-city="深圳">深圳</button>
+                        <button class="city-tag" data-city="杭州">杭州</button>
+                        <button class="city-tag" data-city="成都">成都</button>
+                        <button class="city-tag" data-city="武汉">武汉</button>
+                        <button class="city-tag" data-city="重庆">重庆</button>
+                        <button class="city-tag" data-city="西安">西安</button>
+                        <button class="city-tag" data-city="南京">南京</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 加载状态 -->
+            <div id="loading" class="loading hidden">
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <p>正在查询天气...</p>
+                </div>
+            </div>
+
+            <!-- 错误提示 -->
+            <div id="error" class="error-toast hidden">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <span id="error-message"></span>
+            </div>
+
+            <!-- 搜索结果天气详情（显示在热门城市上方） -->
+            <div id="weather-detail" class="weather-detail hidden">
+                <div class="detail-header">
+                    <h2 id="detail-city"></h2>
+                    <button class="close-detail" id="close-detail">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+                <div class="current-weather-card" id="current-weather-card">
+                    <!-- 实时天气详情 -->
+                </div>
+                <div class="forecast-section" id="forecast-section">
+                    <h3>未来天气预报</h3>
+                    <div class="forecast-list" id="forecast-list">
+                        <!-- 天气预报列表 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 主要城市天气卡片 -->
+            <div class="main-cities-weather" id="main-cities-weather">
+                <div class="section-header">
+                    <h2>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                            <circle cx="12" cy="10" r="3"></circle>
+                        </svg>
+                        热门城市天气
+                    </h2>
+                    <button class="refresh-btn" id="refresh-main">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M23 4v6h-6"></path>
+                            <path d="M1 20v-6h6"></path>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                        </svg>
+                        刷新
+                    </button>
+                </div>
+                <div class="cities-grid" id="cities-grid">
+                    <!-- 城市天气卡片将由JS动态生成 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 页脚 -->
+        <footer class="footer">
+            <p>数据来源：高德地图天气API · 仅供学习参考</p>
+        </footer>
+    </div>
+
+    <!-- API Key配置（从环境变量读取，部署时通过GitHub Actions注入） -->
+    <script>
+        // 尝试从localStorage读取API Key
+        var storedKey = localStorage.getItem('AMAP_API_KEY');
+        if (storedKey) {
+            window.AMAP_API_KEY = storedKey;
+        }
+        // 环境变量在构建时注入
+    </script>
+
+    <script src="./js/config.js"></script>
+    <script src="./js/api.js"></script>
+    <script src="./js/utils.js"></script>
+    <script src="./js/app.js"></script>
+</body>
+</html>
