@@ -1,9 +1,9 @@
 /**
- * WeatherAPI 服务模块
+ * WeatherAPI Service Module
  * Docs: https://www.weatherapi.com/docs/
  */
 const WeatherAPI = {
-    // 获取缓存
+    // Get cache
     getCache(key) {
         try {
             const data = localStorage.getItem(key);
@@ -19,7 +19,7 @@ const WeatherAPI = {
         }
     },
 
-    // 设置缓存
+    // Set cache
     setCache(key, data) {
         try {
             const cacheData = {
@@ -28,11 +28,11 @@ const WeatherAPI = {
             };
             localStorage.setItem(key, JSON.stringify(cacheData));
         } catch (e) {
-            console.warn('缓存写入失败:', e);
+            console.warn('Cache write failed:', e);
         }
     },
 
-    // 构建请求URL
+    // Build request URL
     buildUrl(endpoint, params) {
         const url = new URL(`${CONFIG.baseUrl}${endpoint}`);
         url.searchParams.set('key', CONFIG.apiKey);
@@ -44,15 +44,17 @@ const WeatherAPI = {
         return url.toString();
     },
 
-    // 发送请求
+    // Send request
     async request(endpoint, params = {}, useCache = true) {
-        const cacheKey = `${CONFIG.cache.prefix}${endpoint}_${JSON.stringify(params)}`;
+        // Use stable cache key format: endpoint_q_city
+        const city = params.q || 'unknown';
+        const cacheKey = `${CONFIG.cache.prefix}${endpoint}_${city}`;
         
         if (useCache && CONFIG.cache.enabled) {
             const cached = this.getCache(cacheKey);
             if (cached) {
-                console.log('📦 Cache hit:', endpoint);
-                return { ...cached, fromCache: true };
+                console.log('Cache hit:', cacheKey);
+                return { success: true, data: cached, fromCache: true };
             }
         }
 
@@ -62,7 +64,7 @@ const WeatherAPI = {
             const response = await fetch(url, { signal: AbortSignal.timeout(8000) });
             
             if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                throw new Error(`HTTP ${response.status}`);
             }
             
             const data = await response.json();
@@ -71,59 +73,56 @@ const WeatherAPI = {
                 throw new Error(data.error.message);
             }
 
-            // 缓存结果
             if (useCache && CONFIG.cache.enabled) {
                 this.setCache(cacheKey, data);
             }
 
             return { success: true, data };
         } catch (error) {
-            console.error('API请求失败:', error.message);
+            console.error('API request failed:', error.message);
             return { success: false, error: error.message };
         }
     },
 
-    // 搜索城市
+    // Search city
     async search(q) {
         return this.request('/search.json', { q });
     },
 
-    // 获取实时天气
+    // Get current weather
     async current(q) {
         return this.request('/current.json', { q, lang: 'zh' });
     },
 
-    // 获取天气预报
+    // Get forecast
     async forecast(q, days = 7) {
         return this.request('/forecast.json', { q, days, lang: 'zh' });
     }
 };
 
 /**
- * 天气数据格式化工具
+ * Weather Data Formatter
  */
 const WeatherFormatter = {
-    // 格式化实时天气
+    // Format current weather
     formatCurrent(data) {
         const location = data.location || {};
         const current = data.current || {};
         const condition = current.condition || {};
 
         return {
-            city: location.name || '未知',
+            city: location.name || 'Unknown',
             country: location.country || '',
             region: location.region || '',
             temp: Math.round(current.temp_c) || 0,
             feelsLike: Math.round(current.feelslike_c) || 0,
-            condition: condition.text || '未知',
-            icon: condition.icon || '',
+            condition: condition.text || 'Unknown',
             code: condition.code || 0,
             wind: current.wind_kph || 0,
             windDir: current.wind_dir || '',
             windDegree: current.wind_degree || 0,
             pressure: current.pressure_mb || 0,
             humidity: current.humidity || 0,
-            cloud: current.cloud || 0,
             visibility: current.vis_km || 0,
             uv: current.uv || 0,
             gust: current.gust_kph || 0,
@@ -133,7 +132,7 @@ const WeatherFormatter = {
         };
     },
 
-    // 格式化预报数据
+    // Format forecast data
     formatForecast(data) {
         if (!data.forecast || !data.forecast.forecastday) {
             return [];
@@ -150,8 +149,7 @@ const WeatherFormatter = {
                 tempMax: Math.round(day.maxtemp_c) || 0,
                 tempMin: Math.round(day.mintemp_c) || 0,
                 tempAvg: Math.round(day.avgtemp_c) || 0,
-                condition: condition.text || '未知',
-                icon: condition.icon || '',
+                condition: condition.text || 'Unknown',
                 code: condition.code || 0,
                 windMax: day.maxwind_kph || 0,
                 precip: day.totalprecip_mm || 0,
@@ -165,17 +163,9 @@ const WeatherFormatter = {
         });
     },
 
-    // 获取天气图标
+    // Get weather icon
     getIcon(condition) {
         if (!condition) return '🌤️';
         return CONFIG.icons[condition] || '🌤️';
-    },
-
-    // 获取风向描述
-    getWindDirection(degree) {
-        if (!degree && degree !== 0) return '';
-        const directions = ['北', '东北', '东', '东南', '南', '西南', '西', '西北'];
-        const index = Math.round(degree / 45) % 8;
-        return directions[index] || '';
     }
 };
