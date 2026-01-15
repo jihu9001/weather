@@ -79,12 +79,12 @@ const WeatherAPI = {
 
     // Get current weather
     async current(q) {
-        return this.request('/current.json', { q, lang: 'zh' });
+        return this.request('/current.json', { q, lang: 'en' });
     },
-
+    
     // Get forecast
     async forecast(q, days) {
-        return this.request('/forecast.json', { q, days, lang: 'zh' });
+        return this.request('/forecast.json', { q, days, lang: 'en' });
     }
 };
 
