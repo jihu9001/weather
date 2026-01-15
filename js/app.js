@@ -1,9 +1,8 @@
 /**
- * Weather Query Application - Debug Version
+ * Weather Query Application
+ * API: https://www.weatherapi.com/docs/
  */
 (function() {
-    console.log('=== Weather App Starting ===');
-
     const $ = id => document.getElementById(id);
     const elements = {
         cityInput: $('city-input'),
@@ -18,64 +17,42 @@
         errorMsg: $('error-message')
     };
 
-    // Check elements exist
-    console.log('Elements check:');
-    Object.entries(elements).forEach(([key, el]) => {
-        console.log(`  ${key}: ${el ? 'OK' : 'MISSING'}`);
-    });
-
     // Initialize
     function init() {
-        console.log('=== Init ===');
+        clearCache();
         loadPopularCities();
         bindEvents();
     }
 
+    // Clear cache
+    function clearCache() {
+        Object.keys(localStorage)
+            .filter(key => key.startsWith(CONFIG.cache.prefix))
+            .forEach(key => localStorage.removeItem(key));
+    }
+
     // Load popular cities
     async function loadPopularCities() {
-        console.log('=== Loading Cities ===');
         elements.citiesGrid.innerHTML = '';
         elements.loading.classList.remove('hidden');
 
         const cities = CONFIG.popularCities;
-        console.log('Cities to load:', cities);
 
         for (let i = 0; i < cities.length; i++) {
             const city = cities[i];
-            console.log(`\n[${i+1}/${cities.length}] Loading ${city}...`);
-
             try {
                 const result = await WeatherAPI.current(city);
-                console.log('Result:', result.success ? 'SUCCESS' : 'FAILED', result.error || '');
-
                 if (result.success) {
                     const weather = WeatherFormatter.formatCurrent(result.data);
-                    console.log('Weather data:', weather.city, weather.temp + 'C', weather.condition);
-                    
                     const card = createCityCard(weather, city);
                     elements.citiesGrid.appendChild(card);
-                } else {
-                    // Show error card
-                    const errorCard = document.createElement('div');
-                    errorCard.className = 'city-card';
-                    errorCard.style.background = '#fee';
-                    errorCard.innerHTML = `
-                        <div class="city-card-header">
-                            <span class="city-name">${city}</span>
-                        </div>
-                        <div style="padding: 20px; text-align: center; color: #c00;">
-                            ❌ ${result.error || 'Load failed'}
-                        </div>
-                    `;
-                    elements.citiesGrid.appendChild(errorCard);
                 }
             } catch (e) {
-                console.error('Exception:', e.message);
+                console.error('Load failed:', city, e.message);
             }
         }
 
         elements.loading.classList.add('hidden');
-        console.log('\n=== Loading Complete ===');
     }
 
     // Create city card
@@ -93,7 +70,7 @@
                 <span class="weather-icon-large">${WeatherFormatter.getIcon(weather.condition)}</span>
                 <div class="weather-temp-info">
                     <span class="temp-value">${weather.temp}</span>
-                    <span class="temp-unit">°C</span>
+                    <span class="temp-unit">C</span>
                 </div>
                 <span class="weather-desc">${weather.condition}</span>
             </div>
@@ -122,16 +99,12 @@
 
     // Show weather detail
     async function showWeatherDetail(cityName) {
-        console.log('\n=== Show Detail:', cityName, '===');
         elements.weatherDetail.classList.remove('hidden');
 
         const [currentResult, forecastResult] = await Promise.all([
             WeatherAPI.current(cityName),
             WeatherAPI.forecast(cityName, 7)
         ]);
-
-        console.log('Current:', currentResult.success ? 'OK' : 'FAILED');
-        console.log('Forecast:', forecastResult.success ? 'OK' : 'FAILED');
 
         if (currentResult.success) {
             renderWeatherDetail(WeatherFormatter.formatCurrent(currentResult.data));
@@ -147,7 +120,7 @@
         elements.weatherDetail.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    // Render detail
+    // Render weather detail
     function renderWeatherDetail(weather) {
         $('detail-city').textContent = weather.country + ' - ' + weather.city;
 
@@ -201,39 +174,50 @@
         });
     }
 
+    // Search city
+    async function searchCity() {
+        const city = elements.cityInput.value.trim();
+        if (!city) return showError('Please enter a city name');
+        showWeatherDetail(city);
+    }
+
     // Bind events
     function bindEvents() {
-        elements.searchBtn.onclick = function() {
-            const city = elements.cityInput.value.trim();
-            if (city) {
-                console.log('\n=== Search:', city, '===');
-                showWeatherDetail(city);
-            }
-        };
+        elements.searchBtn.onclick = searchCity;
 
         elements.cityInput.onkeypress = function(e) {
-            if (e.key === 'Enter') {
-                const city = elements.cityInput.value.trim();
-                if (city) showWeatherDetail(city);
-            }
+            if (e.key === 'Enter') searchCity();
         };
 
         elements.quickCities.onclick = function(e) {
             if (e.target.classList.contains('city-tag')) {
                 const city = e.target.dataset.city;
-                console.log('\n=== Quick Click:', city, '===');
                 elements.cityInput.value = city;
                 showWeatherDetail(city);
             }
         };
 
         elements.refreshBtn.onclick = function() {
-            loadPopularCities();
+            elements.refreshBtn.disabled = true;
+            elements.refreshBtn.innerHTML = '<span style="display:inline-block;animation:spin 1s linear infinite;">↻</span> Loading...';
+            loadPopularCities().then(function() {
+                elements.refreshBtn.disabled = false;
+                elements.refreshBtn.innerHTML = '↻ Refresh';
+            });
         };
 
         elements.closeDetail.onclick = function() {
             elements.weatherDetail.classList.add('hidden');
         };
+    }
+
+    // Show error
+    function showError(msg) {
+        elements.errorMsg.textContent = msg;
+        elements.error.classList.remove('hidden');
+        setTimeout(function() {
+            elements.error.classList.add('hidden');
+        }, 3000);
     }
 
     // Start
@@ -242,6 +226,4 @@
     } else {
         init();
     }
-
-    console.log('=== Weather App Started ===');
 })();

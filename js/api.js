@@ -1,11 +1,50 @@
 /**
- * WeatherAPI Service Module - Debug Version
- * No cache, detailed logging
+ * WeatherAPI Service Module
+ * Docs: https://www.weatherapi.com/docs/
  */
 const WeatherAPI = {
-    // Debug request without cache
-    async request(endpoint, params = {}) {
-        const url = new URL(`http://api.weatherapi.com/v1${endpoint}`);
+    // Get cache
+    getCache(key) {
+        try {
+            const data = localStorage.getItem(key);
+            if (!data) return null;
+            const cached = JSON.parse(data);
+            if (Date.now() > cached.expire) {
+                localStorage.removeItem(key);
+                return null;
+            }
+            return cached.data;
+        } catch (e) {
+            return null;
+        }
+    },
+
+    // Set cache
+    setCache(key, data) {
+        try {
+            const cacheData = {
+                data: data,
+                expire: Date.now() + CONFIG.cache.duration
+            };
+            localStorage.setItem(key, JSON.stringify(cacheData));
+        } catch (e) {
+            console.warn('Cache write failed:', e);
+        }
+    },
+
+    // Send request with cache
+    async request(endpoint, params = {}, useCache = true) {
+        const city = params.q || 'unknown';
+        const cacheKey = `${CONFIG.cache.prefix}${endpoint}_${city}`;
+        
+        if (useCache && CONFIG.cache.enabled) {
+            const cached = this.getCache(cacheKey);
+            if (cached) {
+                return { success: true, data: cached, fromCache: true };
+            }
+        }
+
+        const url = new URL(`https://api.weatherapi.com/v1${endpoint}`);
         url.searchParams.set('key', CONFIG.apiKey);
         Object.entries(params).forEach(([key, value]) => {
             if (value !== undefined && value !== null) {
@@ -13,29 +52,27 @@ const WeatherAPI = {
             }
         });
 
-        console.log('API Request:', url.toString());
-
         try {
             const response = await fetch(url.toString(), { 
                 signal: AbortSignal.timeout(10000) 
             });
             
-            console.log('Response status:', response.status);
-
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}`);
             }
             
             const data = await response.json();
-            console.log('Response data:', data.error || 'OK');
             
             if (data.error) {
-                return { success: false, error: data.error.message };
+                throw new Error(data.error.message);
+            }
+
+            if (useCache && CONFIG.cache.enabled) {
+                this.setCache(cacheKey, data);
             }
 
             return { success: true, data };
         } catch (error) {
-            console.error('API Error:', error.message);
             return { success: false, error: error.message };
         }
     },

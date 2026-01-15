@@ -5,7 +5,7 @@
 const CONFIG = {
     // API Configuration
     apiKey: '891aafbb098b43fbaf850924261501',
-    baseUrl: 'http://api.weatherapi.com/v1',
+    baseUrl: 'https://api.weatherapi.com/v1',
     
     // Cache Configuration (5 minutes)
     cache: {
